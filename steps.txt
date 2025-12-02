@@ -1,0 +1,55 @@
+npm create vite@latest
+    Project name: my-app
+    Select a variant: JavaScript + SWC
+        The Engine: SWC (Speedy Web Compiler)
+        This is a newer compiler written in Rust (a very high-performance systems language).
+        Pros: It is significantly faster (often 20x-70x faster) than Babel.
+        Cons: It is newer, so it has fewer niche plugins.
+        When a we change a line of code and hits Save, SWC updates the browser almost instantly. 
+        Babel can sometimes have a split-second delay.
+
+        The "React Compiler" option : (formerly known as "React Forget") is a tool designed to automatically optimize code. 
+        It automatically memorizes variables and functions so developers don't have to worry about performance.
+        For a Senior Developer: This is heaven. It saves time.
+
+        It abstracts away complexity. If we use this, we will never understand why React components 
+        re-render. We won't learn the lifecycle of a component because the compiler 
+        is optimizing our "mistakes" in the background. We want to make those mistakes so 
+        we can learn!
+    Rolldown is currently experimental. It is a brand-new tool being built to eventually 
+    replace the older tools inside Vite. While it is very fast, it is still 
+    in "Beta" testing.
+        If we choose YES: we might encounter random bugs, crashes, 
+        or weird errors,  because the software isn't finished yet.
+        We choose NO: we get the stable, battle-tested version of Vite.
+    
+    When prompted "Install with npm and start now?", this refers to 
+    starting the development server immediately after installation.
+    Select NO. This will allow us to finish setting up our project 
+    and install additional dependencies (like Tailwind) before starting 
+    the development server.
+    Why? If we select YES, Vite will immediately start the web server. 
+    This sounds good, but it creates a problem :
+    It will lock our terminal because the server is running.
+    We won't be able to install Tailwind because the server is busy.
+    We would have to press Ctrl + C to stop the server.
+
+cd my-app 
+npm install
+
+# tailwindcss: 
+npm install tailwindcss @tailwindcss/vite
+in vite.config.js : 
+	import tailwindcss from '@tailwindcss/vite'
+	plugins: [react(),   tailwindcss()], 
+
+    server: { // Configure the development server
+    port: 3001,
+    open: true,
+  },
+
+in .css : 
+	@import "tailwindcss";
+in jsx or tsx : import css file
+
+Summary of all Hooks
