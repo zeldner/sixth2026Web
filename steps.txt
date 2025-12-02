@@ -52,4 +52,104 @@ in .css :
 	@import "tailwindcss";
 in jsx or tsx : import css file
 
-Summary of all Hooks
+REACT HOOKS SUMMARY
+
+--- THE ESSENTIALS (we will use these 90% of the time) ---
+
+1. useState (The Memory)
+   - What it does: Allows a functional component to "remember" data 
+        (like input text, counters, or toggles).
+   - When to use: Whenever we need data to change and update the screen.
+   - Example: OxygenTank.jsx (Tracking oxygen percentage).
+
+2. useEffect (The Side Effect)
+   - What it does: Synchronizes your component with an external system 
+        (Network, Timer, DOM).
+   - When to use: Fetching data, setting up intervals, or subscribing to events.
+   - Example: AlienSignalReceiver.jsx (Listening for data every 2 seconds).
+
+3. useContext (The Teleporter)
+   - What it does: Passes data deep into the tree without manually 
+        passing props through every level.
+   - When to use: Global state like User Auth, Theme (Dark/Light), 
+        or Language settings.
+   - Example: GalaxyEmergencySystem.jsx (Broadcasting "Red Alert" to all ships).
+
+--- REFS & DOM (Direct access) ---
+
+4. useRef (The Persistent Storage)
+   - What it does: Holds a value that persists between renders 
+        BUT does not trigger a re-render when changed. 
+        Also used to grab HTML elements.
+   - When to use: Controlling video players, focusing inputs, or storing 
+        mutable variables.
+   - Example: HolographicTargeting.jsx (Playing/Pausing a video manually).
+
+5. useLayoutEffect (The Measurer)
+   - What it does: Like useEffect, but runs synchronously *before* 
+        the browser paints the screen.
+   - When to use: Measuring the width/height of a div to perform an animation 
+        or calculation without visual flickering.
+   - Example: CloakedShip.jsx (Measuring the ship to apply a blur effect instantly).
+
+6. useImperativeHandle (The Puppet Master)
+   - What it does: Allows a parent to call a function inside a child component.
+   - When to use: Very rare. Controlling a complex child 
+        (like a video player or animation library) from the parent.
+   - Example: SecuritySystem.jsx (Parent forcing the Shield Generator 
+        to "Emergency Shutdown").
+
+--- PERFORMANCE (Optimization) ---
+
+7. useMemo (The Calculator)
+   - What it does: Caches the result of an expensive calculation.
+   - When to use: If we have a heavy math loop that slows down the app, 
+        use this so it only runs when necessary.
+   - Example: MissileInterceptor.jsx (Calculating trajectory physics).
+
+8. useCallback (The Freezer)
+   - What it does: "Freezes" a function definition so it doesn't get 
+        re-created on every render.
+   - When to use: Passing functions to child components that are wrapped 
+        in React.memo().
+   - Example: BombDefusalControl.jsx (Preventing the bomb wire from 
+        changing while the lights toggle).
+
+--- CONCURRENCY (React 18 Features) ---
+
+9. useTransition (The Prioritizer)
+   - What it does: Marks a state update as "low priority" (background work).
+   - When to use: Filtering a huge list. It keeps the typing responsive 
+        while the list updates in the background.
+   - Example: GalacticSearch.jsx (Searching 5000 planets without freezing the input).
+
+10. useDeferredValue (The Debouncer)
+    - What it does: Takes a value and gives you a "lagging" version of it.
+    - When to use: When you have a heavy component that needs to update based 
+            on user input, but you don't want to block the user.
+    - Example: CollaborativeArt.jsx (Rendering a complex drawing based on text input).
+
+--- ADVANCED LOGIC ---
+
+11. useReducer (The Manager)
+    - What it does: Manages complex state logic using "Actions" and a "Reducer" 
+            function.
+    - When to use: When you have many state variables that change together 
+            (like a form with 10 fields, or a game state).
+    - Example: SurgicalArmControl.jsx (Moving, Rotating, and Gripping all 
+            in one state object).
+
+12. useDebugValue (The Label)
+    - What it does: Adds a custom label to a Custom Hook in React DevTools.
+    - When to use: Only in Custom Hooks, to help other developers debug what 
+            the hook is doing.
+    - Example: SpaceWalkMission.jsx (Labeling the astronaut as 
+        "Stable" or "Critical").
+
+------------------------------------------------------------------------------
+CUSTOM HOOKS NOTE:
+A "Custom Hook" is not a built-in React feature. It is a JavaScript function 
+WE write that uses other hooks inside it. It allows you to reuse logic 
+across multiple components. 
+Rule: It must start with the word "use".
+-----------------------------------------------------------------------
