@@ -1,43 +1,98 @@
-@import "tailwindcss";
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* App.css - The Sci-Fi Dashboard Theme */
+
+/* --- 1. DARK MODE BACKGROUND --- */
+body {
+  background-color: #0d1117; /* Deep Space Dark */
+  color: #c9d1d9; /* Soft White Text */
+}
+
+/* --- 2. DASHBOARD LAYOUT --- */
+.dashboard-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.dashboard-title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #a371f7; /* Purple Neon */
+  text-shadow: 0 0 10px rgba(163, 113, 247, 0.5);
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* --- 3. MENU BUTTONS (The Top Navigation) --- */
+.nav-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  max-width: 1000px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.nav-button {
+  background-color: #21262d;
+  color: #8b949e !important; /* Force menu text light */
+  border: 1px solid #30363d;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.9rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-button:hover {
+  background-color: #30363d;
+  color: #ffffff !important;
+  transform: translateY(-2px);
 }
 
-.card {
-  padding: 2em;
+.nav-button.active {
+  background-color: #6e40c9;
+  color: #ffffff !important;
+  border-color: #a371f7;
+  box-shadow: 0 0 15px rgba(110, 64, 201, 0.6);
 }
 
-.read-the-docs {
-  color: #888;
+/* --- 4. SIMULATION AREA (Where the examples load) --- */
+.simulation-window {
+  width: 100%;
+  max-width: 800px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #8b949e;
+}
+
+/* --- 5. COMPONENT FIXES (Global Overrides) --- */
+/* This ensures the buttons inside your examples (like OxygenTank) are readable */
+button {
+  /* Default button style for examples */
+  color: black; 
+  background-color: #f0f0f0;
+  border: 1px solid #888;
+  padding: 5px 10px;
+  margin: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #ddd;
 }

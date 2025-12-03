@@ -1,6 +1,5 @@
 // Ilya Zeldner
 import React, { useState } from 'react';
-import './App.css'; // Make sure this file exists with the CSS I gave you!
 
 // --- THE ESSENTIALS ---
 import OxygenTank from './OxygenTank';             // useState
