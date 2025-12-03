@@ -16,16 +16,15 @@ function useAstronautVitals(astronautID) {
     return () => clearInterval(interval);
   }, []);
 
-  // --- THE FIX ---
-  // Now we actually USE the variable!
-  // In React DevTools, the label will now show: "Commander Shepard: Stable"
-  // This helps you distinguish between different astronauts if you use this hook multiple times.
+  // Using useDebugValue to label the hook's state in React DevTools
+  // The label will show the astronaut ID and their stability status
+  // Example: "Commander Shepard: Stable" or "Commander Shepard: CRITICAL"
   useDebugValue(`${astronautID}: ${isStable ? "Stable" : "CRITICAL"}`);
 
   return { heartRate, isStable };
 }
 
-// --- THE COMPONENT ---
+// THE COMPONENT
 function SpaceWalkMission() {
   const { heartRate, isStable } = useAstronautVitals("Commander Shepard");
 

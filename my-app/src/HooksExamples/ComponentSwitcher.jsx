@@ -1,51 +1,73 @@
 // Ilya Zeldner
-
-// component to switch between all 12 Hook Examples
 import React, { useState } from 'react';
-import './App.css'; 
+import './App.css'; // Make sure this file exists with the CSS I gave you!
 
-// Import all 12 Hook Examples
+// --- THE ESSENTIALS ---
 import OxygenTank from './OxygenTank';             // useState
 import AlienSignalReceiver from './AlienSignalReceiver'; // useEffect
 import GalaxyEmergencySystem from './GalaxyEmergencySystem'; // useContext
-import SurgicalArmControl from './SurgicalArmControl';   // useReducer
-import MissileInterceptor from './MissileInterceptor';   // useMemo
-import BombDefusalControl from './BombDefusalControl';   // useCallback
+
+// --- REFS & DOM ---
 import HolographicTargeting from './HolographicTargeting'; // useRef
 import CloakedShip from './CloakedShip';           // useLayoutEffect
 import SecuritySystem from './SecuritySystem';     // useImperativeHandle
+
+// --- PERFORMANCE ---
+import MissileInterceptor from './MissileInterceptor';   // useMemo
+import BombDefusalControl from './BombDefusalControl';   // useCallback
+
+// --- CONCURRENCY ---
 import GalacticSearch from './GalacticSearch';     // useTransition
 import CollaborativeArt from './CollaborativeArt'; // useDeferredValue
+
+// --- ADVANCED LOGIC & CUSTOM HOOKS ---
+import SurgicalArmControl from './SurgicalArmControl';   // useReducer
 import SpaceWalkMission from './SpaceWalkMission'; // useDebugValue + Custom Hook
+
+// --- REAL PROJECT ---
+import AcademicPortal from '../ex6/AcademicPortal'     // The Full Login/Auth System
 
 function ComponentSwitcher() {
   const [activeComponent, setActiveComponent] = useState('');
 
+  // Map the button names to the actual components
   const components_map = {
+    // Basics
     '1. OxygenTank (useState)': <OxygenTank />,
     '2. AlienSignalReceiver (useEffect)': <AlienSignalReceiver />,
     '3. GalaxyEmergencySystem (useContext)': <GalaxyEmergencySystem />,
+    
+    // Logic & Refs
     '4. SurgicalArmControl (useReducer)': <SurgicalArmControl />,
-    '5. MissileInterceptor (useMemo)': <MissileInterceptor />,
-    '6. BombDefusalControl (useCallback)': <BombDefusalControl />,
-    '7. HolographicTargeting (useRef)': <HolographicTargeting />,
-    '8. CloakedShip (useLayoutEffect)': <CloakedShip />,
-    '9. SecuritySystem (useImperativeHandle)': <SecuritySystem />,
+    '5. HolographicTargeting (useRef)': <HolographicTargeting />,
+    '6. CloakedShip (useLayoutEffect)': <CloakedShip />,
+    '7. SecuritySystem (useImperativeHandle)': <SecuritySystem />,
+
+    // Performance
+    '8. MissileInterceptor (useMemo)': <MissileInterceptor />,
+    '9. BombDefusalControl (useCallback)': <BombDefusalControl />,
+
+    // Concurrency
     '10. GalacticSearch (useTransition)': <GalacticSearch />,
     '11. CollaborativeArt (useDeferredValue)': <CollaborativeArt />,
-    '12. SpaceWalkMission (Custom Hook)': <SpaceWalkMission />
+    
+    // Custom & Advanced
+    '12. SpaceWalkMission (Custom Hook)': <SpaceWalkMission />,
+
+    // FINAL PROJECT
+    '13. AcademicPortal (Full Project)': <AcademicPortal />
   };
 
   const componentToShow = components_map[activeComponent] || 
     <div className="placeholder-content">
-      <h3>System Standby</h3>
-      <p>Select a React Hook to initialize simulation module.</p>
+      <h3>System Ready</h3>
+      <p>Select a module from the control panel above.</p>
     </div>;
 
   return (
     <div className="dashboard-container">
       <h1 className="dashboard-title">
-        React Hooks Training Module
+        React Hooks Master Class
       </h1>
       
       {/* Navigation Buttons */}
