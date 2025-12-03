@@ -2,74 +2,84 @@
 import React, { useState, useEffect } from 'react';
 
 // --- EXPLANATION ---
-// use Effect Hook :
-// Purpose: Manage side effects in functional components.
-// Examples of side effects include data fetching, subscriptions,
-// or manually changing the DOM.
-// In this example, we simulate receiving alien signals every 2 seconds
-// and updating the component state accordingly.
 // useEffect synchronizes a component with an external system
 // (timers, network requests, DOM manipulation).
-// HOW IT WORKS:
-// 1. Accepts a function that contains side-effect logic.
-// 2. The function runs after the render is committed to the screen.
-// 3. Can optionally return a cleanup function to run on unmount or before re-running the effect.
-// 4. Takes a dependency array to control when the effect runs.
-// WHEN TO USE:
-// - For data fetching, subscriptions, or manually changing the DOM.
-// - To run code on mount, unmount, or when specific values change.
-// - To encapsulate side-effect logic separately from rendering logic.
-//
-// Note: In StrictMode (development only), effects run twice to help identify side-effect bugs.
-
-
-// ADVANTAGES:
-// 1. Handles cleanup automatically (via the return function).
-// 2. Consolidates mount, update, and unmount logic in one place.
-
-// DISADVANTAGES:
-// 1. Easy to create infinite loops if dependency array is wrong.
-// 2. StrictMode runs effects twice in dev, which can be confusing.
-
+// In this example, we simulate receiving alien signals over time.
+// The effect sets up a timer to append random "signal" data every second.
+// When the component unmounts, the effect cleans up the timer.
+// We also demonstrate how changing a state variable (maxLength)
+// can trigger the effect to re-run, simulating dynamic behavior.
 function AlienSignalReceiver() {
   const [signalData, setSignalData] = useState('');
-  const MAX_DATA_LENGTH = 50; 
+  
+  // The user can change this value dynamically!
+  const [maxLength, setMaxLength] = useState(50); 
 
   useEffect(() => {
-    console.log("Establishing connection to alien signal...");
+    console.log(`Establishing connection (Limit: ${maxLength} chars)...`);
     
+    // setInterval simulates receiving data over time 
+    // from an alien source (every second).
+  
     const intervalId = setInterval(() => {
       const newData = Math.random().toString(36).substring(7);
       
-      // Using functional update allows us to remove 'signalData' 
-      // from dependencies, preventing the connection from resetting 
-      // every 2 seconds.
+      
       setSignalData(prevData => {
-        if (prevData.length >= MAX_DATA_LENGTH) {
+        // Stop if we reached the CURRENT limit
+        if (prevData.length >= maxLength) {
             clearInterval(intervalId);
             return prevData;
         }
         return prevData + newData + ' ';
       });
       
-      console.log("Receiving packet...");
-    }, 2000);
+    }, 1000); 
 
-    // Runs when component unmounts
     return () => {
       console.log("Disconnecting signal...");
       clearInterval(intervalId);
     };
-  }, [MAX_DATA_LENGTH]); // Only re-run if config changes, not on every data packet
+    
+    // If you move the slider, 'maxLength' changes,
+    // causing this effect to restart.
+  }, [maxLength]); 
 
   return (
     <div style={{ border: '1px solid purple', padding: '20px' }}>
       <h2>Alien Signal Receiver</h2>
-      <p style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>
-        {signalData}
+      
+      {/* CONTROL PANEL */}
+      <div style={{marginBottom: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '5px'}}>
+        <label style={{marginRight: '10px', fontWeight: 'bold', color: '#333'}}>
+            Buffer Size Limit: {maxLength}
+        </label>
+        <input 
+            type="range" 
+            min="20" 
+            max="200" 
+            step="10"
+            value={maxLength}
+            onChange={(e) => {
+                // When this changes, the Effect above RE-RUNS automatically
+                setMaxLength(Number(e.target.value));
+                setSignalData(''); // Optional: Clear old data to start fresh
+            }} 
+        />
+        <p style={{fontSize: '0.8rem', color: '#555', margin: '5px 0 0 0'}}>
+            * Dragging the slider restarts the useEffect hook because 'maxLength' is in the dependency array.
+        </p>
+      </div>
+
+      {/* DATA DISPLAY */}
+      <p style={{ wordBreak: 'break-all', fontFamily: 'monospace', background: '#000', color: '#0f0', padding: '10px' }}>
+        {signalData || "Waiting for signal..."}
       </p>
-      {signalData.length >= MAX_DATA_LENGTH && (
-        <p style={{ color: 'orange' }}>Buffer Full. Connection Halted.</p>
+      
+      {signalData.length >= maxLength && (
+        <p style={{ color: 'orange', fontWeight: 'bold' }}>
+            Buffer Full. Connection Halted.
+        </p>
       )}
     </div>
   );
