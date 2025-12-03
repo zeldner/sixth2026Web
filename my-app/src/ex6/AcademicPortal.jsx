@@ -2,15 +2,17 @@
 import React, { useState, useContext, createContext, useRef, useEffect } from 'react';
 
 // CONFIGURATION
-// Use environment variables for sensitive data and configuration
-// Fallback to default key if env variable is not set
+//
+// This Academic Portal allows students to register, login, and view their grades.
+// Faculty can login with a special password to view all registered students.
+// Data is stored in sessionStorage for simplicity.
 const STORAGE_KEY = import.meta.env.VITE_DB_KEY || 'college_backup_db';
 const FACULTY_PASS = import.meta.env.VITE_FACULTY_PASS;
 
-// AUTH CONTEXT (Logic)
-// This context manages authentication state and provides
-// functions for login, registration, and logout.
-// It also includes a function for Admins to view all students.
+// AUTH CONTEXT
+//
+// We use React Context to manage authentication state across the app.
+// This includes current user info, login, registration, and logout functions.
 const AuthContext = createContext(null);
 
 function AuthProvider({ children }) {
@@ -23,14 +25,8 @@ function AuthProvider({ children }) {
     return stored ? JSON.parse(stored) : [];
   };
 
-  //  FUNCTION FOR ADMIN TO SEE EVERYONE
-  // This function is exposed to the context so that
-  // the Dashboard component can use it to list all students.
-  // It filters out only users with the 'Student' role.
-  // This keeps Admins from seeing other Admins (if any).
   const getAllStudents = () => {
     const users = getUsersFromStorage();
-    // Filter to show only Students 
     return users.filter(u => u.role === 'Student');
   };
 
@@ -46,7 +42,9 @@ function AuthProvider({ children }) {
         return;
       }
 
-      // Generate Random Grades for the Demo
+      // Generate Random Grades
+      // For simplicity, we assign random grades upon registration
+      // In a real app, grades would be managed separately
       const mockGrades = [
         { course: "Linear Algebra", score: Math.floor(Math.random() * (100 - 60) + 60) },
         { course: "Web Development", score: Math.floor(Math.random() * (100 - 80) + 80) },
@@ -72,18 +70,19 @@ function AuthProvider({ children }) {
     setError('');
 
     setTimeout(() => {
-      // 1. FACULTY LOGIN (ENV VARIABLE)
+      // FACULTY LOGIN
+      // Special case for faculty access
+      // Faculty does not have a studentID, only a password
       if (password === FACULTY_PASS) {
-        setCurrentUser({ 
-            studentID: "ADMIN", 
-            fullName: "Senior Lecturer", 
-            role: "Faculty" 
-        });
+        setCurrentUser({ studentID: "ADMIN", fullName: "Senior Lecturer", role: "Faculty" });
         setLoading(false);
         return; 
       }
 
       // STUDENT LOGIN
+      // Check credentials against stored users
+      // If found, set as current user
+      // If not, show error
       const users = getUsersFromStorage();
       const foundUser = users.find(u => u.studentID === studentID && u.password === password);
 
@@ -98,9 +97,6 @@ function AuthProvider({ children }) {
 
   const logout = () => setCurrentUser(null);
 
-  // Expose 'getAllStudents' to the context so Dashboard can use it
-  // along with other auth functions and state.
-  // This keeps all auth-related logic encapsulated here.
   return (
     <AuthContext.Provider value={{ currentUser, login, register, logout, getAllStudents, loading, error }}>
       {children}
@@ -108,15 +104,20 @@ function AuthProvider({ children }) {
   );
 }
 
-// UI COMPONENTS
 
-// LOGIN & REGISTER PANELS
+// UI COMPONENTS
+//
+// We have LoginPanel, RegisterPanel, Dashboard, and PortalController components
+// to manage the user interface and interactions.
+
 function LoginPanel({ onSwitchToRegister }) {
   const { login, loading, error } = useContext(AuthContext);
   const [studentID, setStudentID] = useState('');
   const [password, setPassword] = useState('');
   const idRef = useRef(null);
+  
   useEffect(() => { if(idRef.current) idRef.current.focus(); }, []);
+  
   const handleSubmit = (e) => { e.preventDefault(); login(studentID, password); };
 
   return (
@@ -139,14 +140,35 @@ function LoginPanel({ onSwitchToRegister }) {
   );
 }
 
+// REGISTER PANEL (With Validation Logic)
+//
+// This component allows new students to register.
+// It includes validation for password length and student ID format.
+// It disables the submit button until all fields are valid.
+// It also includes a link to switch back to the login panel.
 function RegisterPanel({ onSwitchToLogin }) {
   const { register, loading, error } = useContext(AuthContext);
+  
+  // STATE DEFINITIONS
   const [fullName, setFullName] = useState('');
   const [studentID, setStudentID] = useState('');
   const [password, setPassword] = useState('');
+  
   const nameRef = useRef(null);
   useEffect(() => { if(nameRef.current) nameRef.current.focus(); }, []);
-  const handleSubmit = (e) => { e.preventDefault(); register(studentID, fullName, password); };
+
+  // VALIDATION LOGIC
+  // 1. Password must be at least 6 characters
+  // 2. Student ID must be exactly 9 digits
+  // 3. All fields must be filled
+  const isPasswordShort = password.length > 0 && password.length < 6;
+  const isIdInvalid = studentID.length > 0 && studentID.length !== 9;
+  const isValid = !isPasswordShort && !isIdInvalid && fullName.length > 0 && studentID.length > 0 && password.length > 0;
+
+  const handleSubmit = (e) => { 
+    e.preventDefault(); 
+    if(isValid) register(studentID, fullName, password); 
+  };
 
   return (
     <div className="card fade-in">
@@ -156,31 +178,64 @@ function RegisterPanel({ onSwitchToLogin }) {
             <label>Full Name:</label>
             <input ref={nameRef} type="text" value={fullName} onChange={e => setFullName(e.target.value)} required placeholder="Israel Israeli" />
         </div>
+        
         <div className="form-group">
             <label>Student ID:</label>
-            <input type="text" value={studentID} onChange={e => setStudentID(e.target.value)} required placeholder="e.g. 305123456" />
+            <input 
+                type="text" 
+                value={studentID} 
+                onChange={e => setStudentID(e.target.value)} 
+                required 
+                placeholder="e.g. 305123456"
+                style={{ borderColor: isIdInvalid ? 'red' : '#ced4da' }}
+            />
+            {isIdInvalid && <small style={{color: '#dc3545'}}>ID must be 9 digits</small>}
         </div>
+        
         <div className="form-group">
             <label>Password:</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                style={{ borderColor: isPasswordShort ? 'red' : '#ced4da' }}
+            />
+            {isPasswordShort && <small style={{color: '#dc3545'}}>Must be at least 6 characters</small>}
         </div>
+
         {error && <p className="error-msg">{error}</p>}
-        <button type="submit" disabled={loading}>{loading ? "Registering..." : "Create Account"}</button>
+
+        {
+        /*
+          BUTTON DISABLE LOGIC
+          - Disabled if loading or form is invalid
+          - Opacity and cursor change to indicate disabled state
+          */
+        }
+        <button 
+            type="submit" 
+            disabled={loading || !isValid}
+            style={{ opacity: !isValid ? 0.6 : 1, cursor: !isValid ? 'not-allowed' : 'pointer' }}
+        >
+            {loading ? "Registering..." : "Create Account"}
+        </button>
       </form>
+      
+      {
+      /* 
+      LINK BACK TO LOGIN
+      - Simple text link to switch back to login panel
+      */
+      }
       <p className="switch-link">Registered? <span onClick={onSwitchToLogin}>Login Here</span></p>
     </div>
   );
 }
 
-// DASHBOARD
-// Shows different views for Faculty (Admin) and Students
-// Faculty can see the list of all students
-// Students can see their own grades
 function Dashboard() {
   const { currentUser, logout, getAllStudents } = useContext(AuthContext);
   const isFaculty = currentUser.role === "Faculty";
-  
-  // Derive student list directly instead of storing in state
   const studentList = isFaculty ? getAllStudents() : [];
 
   return (
@@ -195,15 +250,10 @@ function Dashboard() {
       </div>
 
       <div style={{textAlign: 'left', background: '#f8f9fa', padding: '15px', borderRadius: '5px', margin: '20px 0'}}>
-        
         {isFaculty ? (
-            // FACULTY (THE LIST)
             <div>
                 <h4 style={{color: '#333', borderBottom: '2px solid #ddd', paddingBottom: '5px'}}>Registered Students ({studentList.length})</h4>
-                
-                {studentList.length === 0 ? (
-                    <p style={{color: '#777'}}>No students registered yet.</p>
-                ) : (
+                {studentList.length === 0 ? <p style={{color: '#777'}}>No students registered yet.</p> : (
                     <div style={{maxHeight: '200px', overflowY: 'auto'}}>
                         <table style={{width: '100%', borderCollapse: 'collapse', marginTop: '10px'}}>
                             <thead>
@@ -219,12 +269,7 @@ function Dashboard() {
                                         <td style={{padding: '8px', fontSize: '0.9rem', color: '#333'}}>{student.studentID}</td>
                                         <td style={{padding: '8px', fontSize: '0.9rem', fontWeight: 'bold', color: '#333'}}>{student.fullName}</td>
                                         <td style={{padding: '8px', textAlign: 'center'}}>
-                                            <button 
-                                                onClick={() => alert(`Edit grades for ${student.fullName}? (Feature coming soon)`)}
-                                                style={{padding: '4px 8px', fontSize: '0.75rem', width: 'auto', background: '#28a745'}}
-                                            >
-                                                Edit
-                                            </button>
+                                            <button onClick={() => alert(`Edit grades for ${student.fullName}? (Feature coming soon)`)} style={{padding: '4px 8px', fontSize: '0.75rem', width: 'auto', background: '#28a745'}}>Edit</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -234,23 +279,13 @@ function Dashboard() {
                 )}
             </div>
         ) : (
-            // STUDENT (THE GRADES)
-            // Show student's own grades
-            // If no grades, show a message
-            // Assume grades is an array of { course, score }
             <div>
                 <h4 style={{color: '#333', borderBottom: '2px solid #ddd', paddingBottom: '5px'}}>Semester Grades</h4>
                 <ul style={{listStyle: 'none', padding: 0, color: '#333'}}>
                   {currentUser.grades && currentUser.grades.map((grade, index) => (
                     <li key={index} style={{borderBottom: '1px solid #ddd', padding: '10px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <span style={{fontSize: '1rem'}}>{grade.course}</span>
-                        <span style={{
-                            fontWeight: 'bold', 
-                            color: grade.score >= 90 ? '#28a745' : (grade.score < 60 ? '#dc3545' : '#333'),
-                            background: '#e9ecef',
-                            padding: '2px 8px',
-                            borderRadius: '4px'
-                        }}>
+                        <span style={{fontWeight: 'bold', color: grade.score >= 90 ? '#28a745' : (grade.score < 60 ? '#dc3545' : '#333'), background: '#e9ecef', padding: '2px 8px', borderRadius: '4px'}}>
                             {grade.score}
                         </span>
                     </li>
@@ -259,17 +294,11 @@ function Dashboard() {
             </div>
         )}
       </div>
-
       <button onClick={logout} style={{background: '#6c757d', border: 'none'}}>Logout</button>
     </div>
   );
 }
 
-// PORTAL CONTROLLER
-// Decides which view to show based on auth state
-// If logged in, show Dashboard
-// If not, show Login or Register panels
-// with ability to switch between them
 function PortalController() {
   const { currentUser } = useContext(AuthContext);
   const [isLoginView, setIsLoginView] = useState(true);
@@ -282,9 +311,8 @@ function PortalController() {
 }
 
 // STYLES
-// Main Academic Portal Component
-// Applies overall styles and wraps everything in AuthProvider
-// to provide auth context to all components
+// inline styles and CSS classes for simplicity.
+// In a real app, we using CSS modules or styled-components for better scalability.
 function AcademicPortal() {
   return (
     <div style={{background: '#e9ecef', minHeight: '600px', padding: '40px', fontFamily: '"Segoe UI", sans-serif', color: '#333'}}>
