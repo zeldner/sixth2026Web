@@ -2,8 +2,7 @@
 import React, { useState, useDeferredValue, useMemo } from 'react';
 
 // --- EXPLANATION ---
-// useDeferredValue accepts a value and returns a new copy of the value
-// that will defer to more urgent updates.
+// useDeferredValue accepts a value and returns a new copy of the value , that will defer to more urgent updates.
 // It is useful for improving responsiveness of your app
 // when you have some non-urgent part of the UI that can lag behind.
 // In this example, we simulate a collaborative art app where the user types text

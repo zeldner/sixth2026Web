@@ -1,5 +1,5 @@
 // Ilya Zeldner
-import React, { useState, useEffect, useDebugValue } from 'react';
+import React, { useState, useEffect, useDebugValue } from "react";
 
 // --- CUSTOM HOOK ---
 // We pass 'astronautID' to the hook to identify who we are monitoring
@@ -29,14 +29,26 @@ function SpaceWalkMission() {
   const { heartRate, isStable } = useAstronautVitals("Commander Shepard");
 
   return (
-    <div style={{ border: '2px solid white', background: '#222', color: 'white', padding: '20px' }}>
+    <div
+      style={{
+        border: "2px solid white",
+        background: "#222",
+        color: "white",
+        padding: "20px",
+      }}
+    >
       <h2>EVA Mission Monitor</h2>
       <h3>Astronaut: Commander Shepard</h3>
       <p>Heart Rate: {heartRate} BPM</p>
-      <p>Status: <strong style={{ color: isStable ? 'lime' : 'red' }}>
+      <p>
+        Status:{" "}
+        <strong style={{ color: isStable ? "lime" : "red" }}>
           {isStable ? "NORMAL" : "TACHYCARDIA WARNING"}
-      </strong></p>
-      <small>* Open React DevTools to see "Commander Shepard" in the label.</small>
+        </strong>
+      </p>
+      <small>
+        * Open React DevTools to see "Commander Shepard" in the label.
+      </small>
     </div>
   );
 }

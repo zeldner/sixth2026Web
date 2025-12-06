@@ -1,68 +1,111 @@
 // Ilya Zeldner
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 
-// --- EXPLANATION ---
-// useMemo caches the result of a calculation between re-renders.
-// It only recalculates if dependencies change.
-// In this example, we simulate an expensive calculation for missile interception trajectory.
+// --- HELPER: The "Heavy" Math Function ---
+// This simulates a complex physics engine that takes 300ms to run.
+// It calculates the time and angle needed to intercept a missile.
+// We add console.logs to see when it runs.
+// In a real app, this could be a complex calculation.
+// We add a label parameter to identify which component is calling it.
+const calculateTrajectory = (velocity, distance, label) => {
+  console.log(`[${label}] Starting expensive calculation...`);
+  const start = performance.now();
+  while (performance.now() - start < 300) {
+    // ARTIFICIAL LAG: Block the CPU for 300ms
+  }
+  console.log(`[${label}] Finished calculation.`);
 
-// Without useMemo, every state change (even unrelated ones) would trigger the expensive calculation,
-// causing UI lag. With useMemo, we avoid recalculating unless relevant inputs change.
+  const time = distance / velocity;
+  const angle = Math.atan(velocity / 9.81) * (180 / Math.PI);
+  return `Time: ${time.toFixed(2)}s, Angle: ${angle.toFixed(2)}°`;
+};
 
-// ADVANTAGES:
-// 1. Prevents expensive calculations from running on every render.
-// 2. Essential for referential equality (preventing useEffects from firing).
+// THE "BAD" COMPONENT (No useMemo)
+function SlowInterceptor() {
+  const [velocity, setVelocity] = useState(100);
+  const [darkTheme, setDarkTheme] = useState(false);
+  const distance = 5000;
 
-// DISADVANTAGES:
-// 1. Consumes memory to store the cached value.
-// 2. Adds overhead. Don't use it for simple math (like a + b).
+  // PROBLEM: This runs on EVERY render, even when just toggling the theme!
+  const result = calculateTrajectory(velocity, distance, "BAD/SLOW");
 
+  const style = {
+    padding: "15px",
+    border: "2px solid red",
+    backgroundColor: darkTheme ? "#333" : "#fff",
+    color: darkTheme ? "#fff" : "#000",
+    transition: "background-color 0.2s",
+  };
+
+  return (
+    <div style={style}>
+      <h3 style={{ color: "red" }}>WITHOUT useMemo (Slow)</h3>
+      <p>Result: {result}</p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <button onClick={() => setVelocity((v) => v + 10)}>
+          Step 1: Change Velocity (Lag is normal)
+        </button>
+
+        {/* THIS IS THE DEMO: */}
+        <button onClick={() => setDarkTheme(!darkTheme)}>
+          Step 2: Toggle Theme (LAG IS BAD!)
+        </button>
+      </div>
+      <small>Note: Toggling theme freezes because the math runs again.</small>
+    </div>
+  );
+}
+
+// THE "GOOD" COMPONENT (With useMemo)
+
+function FastInterceptor() {
+  const [velocity, setVelocity] = useState(100);
+  const [darkTheme, setDarkTheme] = useState(false);
+  const distance = 5000;
+
+  // SOLUTION: This only runs when 'velocity' changes.
+  // It IGNORES 'darkTheme' changes.
+  const result = useMemo(() => {
+    return calculateTrajectory(velocity, distance, "GOOD/FAST");
+  }, [velocity]); //  Dependency Array
+
+  const style = {
+    padding: "15px",
+    border: "2px solid green",
+    backgroundColor: darkTheme ? "#333" : "#fff",
+    color: darkTheme ? "#fff" : "#000",
+    transition: "background-color 0.2s",
+  };
+
+  return (
+    <div style={style}>
+      <h3 style={{ color: "green" }}>WITH useMemo (Fast)</h3>
+      <p>Result: {result}</p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <button onClick={() => setVelocity((v) => v + 10)}>
+          Step 1: Change Velocity (Lag is normal)
+        </button>
+
+        {/* THIS IS THE DEMO: */}
+        <button onClick={() => setDarkTheme(!darkTheme)}>
+          Step 2: Toggle Theme (INSTANT!)
+        </button>
+      </div>
+      <small>Note: Toggling theme is instant. Math is skipped.</small>
+    </div>
+  );
+}
 function MissileInterceptor() {
-    const [targetVelocity, setTargetVelocity] = useState(100);
-    const [targetDistance, setTargetDistance] = useState(5000);
-    const [theme, setTheme] = useState('dark'); // Unrelated state
-
-    const interceptionTrajectory = useMemo(() => {
-        // Deterministic "expensive" calculation that is pure (no performance.now)
-        // Perform a CPU-bound loop whose iteration count depends only on inputs 
-        // to keep the function pure.
-        const iterations = 300000 + Math.abs(Math.floor(targetDistance / 10)) + Math.abs(Math.floor(targetVelocity)) * 10;
-        let acc = 0;
-        for (let i = 0; i < iterations; i++) {
-            // pure math work to keep CPU busy without calling impure APIs
-            acc += Math.sin(i) * Math.cos((i + targetVelocity) % (targetDistance + 1));
-        }
-        // Use acc so the loop work isn't optimized away
-        if (acc === Infinity) {
-            console.log('unexpected');
-        }
-        
-        console.log("Recalculating Trajectory... (This is slow)");
-        const timeToIntercept = targetDistance / targetVelocity;
-        const angle = Math.atan(targetVelocity / 9.81) * (180 / Math.PI);
-        return `Time: ${timeToIntercept.toFixed(2)}s, Angle: ${angle.toFixed(2)}°`;
-    }, [targetVelocity, targetDistance]); 
-    // ^ Dependency Array: Only recalculate if velocity or distance changes. 
-    // Changing 'theme' will NOT trigger this calculation.
-
-    return (
-        <div style={{ 
-            border: '1px solid orange', 
-            padding: '20px', 
-            background: theme === 'dark' ? '#333' : '#FFF',
-            color: theme === 'dark' ? '#FFF' : '#000'
-        }}>
-            <h2>Missile Interceptor</h2>
-            <p>Calculated Trajectory: <strong>{interceptionTrajectory}</strong></p>
-            
-            <button onClick={() => setTargetVelocity(v => v + 10)}>Increase Velocity</button>
-            <button onClick={() => setTargetDistance(d => d - 500)}>Decrease Distance</button>
-            <hr/>
-            <button onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}>
-                Toggle Theme (Should be fast)
-            </button>
-        </div>
-    );
+  return (
+    <div
+      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+    >
+      <SlowInterceptor />
+      <FastInterceptor />
+    </div>
+  );
 }
 
 export default MissileInterceptor;

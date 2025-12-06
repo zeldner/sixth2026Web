@@ -1,70 +1,170 @@
 // Ilya Zeldner
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useRef, useEffect } from "react";
 
+// THE CHILD COMPONENT (The Bomb)
+// This component shows how many times it has rendered.
+// It has a button to "Cut the Wire".
+// We will see how often it re-renders based on parent props.
+// We use React.memo to avoid re-rendering unless props change.
 
-// useCallback caches a function definition between re-renders.
-// Typically used with React.memo().
-// Prevents child components from re-rendering unnecessarily
-// when parent re-renders due to unrelated state changes.
-// Useful for performance optimization.
+const BombVisualizer = memo(({ label, onCutWire, isCorrect }) => {
+  const renderCount = useRef(0);
+  const spanRef = useRef(null);
 
-// ADVANTAGES:
-// 1. Prevents unnecessary re-renders of child components.
-// 2. Improves performance in certain scenarios.
-// 3. Useful when passing functions to memoized child components.
-// DISADVANTAGES:
-// 1. Adds complexity to the code.
-// 2. Overuse can lead to harder-to-read code.
-// 3. Not always a performance win; measure before optimizing.
+  // THIS IS THE FIX:
+  // We perform the "Side Effect" (Updating the count) inside useEffect.
+  // This runs AFTER React finishes rendering, so it is allowed/pure.
+  useEffect(() => {
+    renderCount.current += 1;
+    if (spanRef.current) {
+      spanRef.current.innerText = renderCount.current;
+      // Add a visual "Flash" effect
+      spanRef.current.style.color = "yellow";
+      spanRef.current.style.textShadow = "0 0 10px yellow";
 
+      const timer = setTimeout(() => {
+        if (spanRef.current) {
+          spanRef.current.style.color = "white";
+          spanRef.current.style.textShadow = "none";
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }); // No dependency array = Runs on EVERY Render
 
-// Child component wrapped in memo (Only updates if props change)
-const BombVisualizer = memo(({ onCutWire }) => {
-  console.log("💥 BombVisualizer RENDERED! (This should NOT happen when lights toggle)");
+  const style = {
+    padding: "15px",
+    marginTop: "10px",
+    border: "2px dashed " + (isCorrect ? "green" : "red"),
+    background: "#222",
+    color: "white",
+    transition: "all 0.3s",
+  };
+
   return (
-    <div style={{ border: '2px dashed red', padding: '10px', marginTop: '10px', background: 'white', color: 'black' }}>
-      <h4>Visualizer Module</h4>
-      <button onClick={onCutWire} style={{background: 'red', color: 'white'}}>CUT THE WIRE</button>
+    <div style={style}>
+      <h4>{label}</h4>
+      <p>
+        Render Count:
+        {/* We use a ref to update this number directly */}
+        <strong
+          ref={spanRef}
+          style={{ marginLeft: "10px", fontSize: "1.5rem" }}
+        >
+          0
+        </strong>
+      </p>
+      <button
+        onClick={onCutWire}
+        style={{
+          width: "100%",
+          background: "red",
+          color: "white",
+          border: "none",
+          padding: "8px",
+          cursor: "pointer",
+        }}
+      >
+        ✂ CUT WIRE
+      </button>
     </div>
   );
 });
 
-function BombDefusalControl() {
-  const [defused, setDefused] = useState(false);
-  const [roomLight, setRoomLight] = useState(true); // Unrelated state
+// THE "BAD" PARENT (No useCallback)
+function BadDefusal() {
+  const [lightsOn, setLightsOn] = useState(true);
 
-
-  // useCallback to memoize the handleCut function
-  // so that its reference doesn't change on re-renders
-  // caused by roomLight state changes.
-  const handleCut = useCallback(() => {
-    setDefused(true);
-    alert("Wire Cut!");
-  }, []); 
+  // PROBLEM: This function is recreated every time the parent renders.
+  const handleCut = () => {
+    alert("BOOM! (Bad Version)");
+  };
 
   return (
-    <div style={{ 
-        border: '1px solid black', 
-        padding: '20px',
-        // --- VISUAL FIX: Actually change the background color! ---
-        backgroundColor: roomLight ? '#ffffff' : '#555555',
-        color: roomLight ? 'black' : 'white',
-        transition: 'background-color 0.3s'
-    }}>
-      <h2>Bomb Squad Control</h2>
-      <p>Status: {defused ? "SAFE" : "ARMED"}</p>
-      
-      {/* 1. CLICKING THIS changes the Parent Background */}
-      <button onClick={() => setRoomLight(!roomLight)}>
-        Toggle Room Lights (Current: {roomLight ? "ON" : "OFF"})
+    <div
+      style={{
+        padding: "20px",
+        border: "1px solid red",
+        background: lightsOn ? "#fff" : "#666",
+        transition: "background 0.3s",
+      }}
+    >
+      <h3 style={{ color: "red" }}>WITHOUT useCallback</h3>
+
+      <button onClick={() => setLightsOn(!lightsOn)}>
+        Toggle Lights (Triggers Re-render)
       </button>
 
-      <p style={{fontStyle: 'italic', fontSize: '0.8rem'}}>
-        (Open Console F12: Toggling lights should NOT re-render the Bomb below)
-      </p>
+      <BombVisualizer
+        label="Unstable Bomb"
+        onCutWire={handleCut}
+        isCorrect={false}
+      />
 
-      {/* 2. BUT THIS COMPONENT SHOULD NOT FLICKER/RENDER */}
-      <BombVisualizer onCutWire={handleCut} />
+      <small
+        style={{
+          display: "block",
+          marginTop: "10px",
+          color: lightsOn ? "black" : "white",
+        }}
+      >
+        Proof: Toggle Lights to see Count INCREASE (Bad)
+      </small>
+    </div>
+  );
+}
+
+// THE "GOOD" PARENT (With useCallback)
+
+function GoodDefusal() {
+  const [lightsOn, setLightsOn] = useState(true);
+
+  // SOLUTION: This function is cached.
+  const handleCut = useCallback(() => {
+    alert("Defused! (Good Version)");
+  }, []);
+
+  return (
+    <div
+      style={{
+        padding: "20px",
+        border: "1px solid green",
+        background: lightsOn ? "#fff" : "#666",
+        transition: "background 0.3s",
+      }}
+    >
+      <h3 style={{ color: "green" }}>WITH useCallback</h3>
+
+      <button onClick={() => setLightsOn(!lightsOn)}>
+        Toggle Lights (Efficient)
+      </button>
+
+      <BombVisualizer
+        label="Stable Bomb"
+        onCutWire={handleCut}
+        isCorrect={true}
+      />
+
+      <small
+        style={{
+          display: "block",
+          marginTop: "10px",
+          color: lightsOn ? "black" : "white",
+        }}
+      >
+        Proof: Toggle Lights... Count STAYS SAME (Good)
+      </small>
+    </div>
+  );
+}
+
+function BombDefusalControl() {
+  return (
+    <div
+      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+    >
+      <BadDefusal />
+      <GoodDefusal />
     </div>
   );
 }

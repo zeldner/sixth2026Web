@@ -1,5 +1,5 @@
 // Ilya Zeldner
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition } from "react";
 
 // --- EXPLANATION ---
 // useTransition lets you update the state without blocking the UI.
@@ -7,11 +7,10 @@ import React, { useState, useTransition } from 'react';
 // This is useful for keeping the interface responsive during heavy rendering tasks.
 // -------------------
 // USAGE SCENARIO:
-// 1. You have a large list or complex UI that takes time to render.
-// 2. You want to keep input fields or other interactions smooth while
-// rendering updates.
-// 3. You want to show a pending state while the update is being processed.
-// 4. You are optimizing for user experience in CPU-intensive applications.
+// we have a large list or complex UI that takes time to render.
+// we want to keep input fields or other interactions smooth while rendering updates.
+// we want to show a pending state while the update is being processed.
+// we are optimizing for user experience in CPU-intensive applications.
 
 // ADVANTAGES:
 // 1. Keeps the UI responsive (typing remains smooth) even if the result list takes time to render.
@@ -25,34 +24,41 @@ import React, { useState, useTransition } from 'react';
 const database = Array.from({ length: 5000 }, (_, i) => `Planet Sector ${i}`);
 
 function GalacticSearch() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [list, setList] = useState(database);
   const [isPending, startTransition] = useTransition();
 
   const handleChange = (e) => {
     const value = e.target.value;
-    
+
     // 1. High Priority: Update Input immediately
     setQuery(value);
 
     // 2. Low Priority: Filter the list
     startTransition(() => {
-        // In a real app, filtering 10,000 items would lag.
-        // useTransition allows the input to keep typing while this crunch happens.
-        const filtered = database.filter(item => item.includes(value));
-        setList(filtered);
+      // In a real app, filtering 10,000 items would lag.
+      // useTransition allows the input to keep typing while this crunch happens.
+      const filtered = database.filter((item) => item.includes(value));
+      setList(filtered);
     });
   };
 
   return (
-    <div style={{ border: '1px solid lime', padding: '20px' }}>
+    <div style={{ border: "1px solid lime", padding: "20px" }}>
       <h2>Galactic Database</h2>
-      <input type="text" value={query} onChange={handleChange} placeholder="Search..." />
-      
-      {isPending && <span style={{color: 'yellow'}}> Scanning...</span>}
-      
+      <input
+        type="text"
+        value={query}
+        onChange={handleChange}
+        placeholder="Search..."
+      />
+
+      {isPending && <span style={{ color: "yellow" }}> Scanning...</span>}
+
       <ul>
-        {list.slice(0, 10).map(item => <li key={item}>{item}</li>)}
+        {list.slice(0, 10).map((item) => (
+          <li key={item}>{item}</li>
+        ))}
       </ul>
     </div>
   );

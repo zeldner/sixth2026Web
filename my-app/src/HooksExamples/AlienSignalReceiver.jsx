@@ -34,7 +34,7 @@ function AlienSignalReceiver() {
         return prevData + newData + ' ';
       });
       
-    }, 1000); 
+    }, 2000); 
 
     return () => {
       console.log("Disconnecting signal...");
